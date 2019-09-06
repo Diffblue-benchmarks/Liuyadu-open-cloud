@@ -1,0 +1,213 @@
+# Copyright 2019 Diffblue Limited. All Rights Reserved.
+buildCmd: "mvn -e -X -Dlicense.skip=true -Dmaven.enforcer.skip=true -Denforcer.skip=true -Dair.check.skip-all=true -Dair.check.skip-all=true  -Dmaven.compiler.source=8 -Dmaven.compiler.target=8 -Dmaven.test.skip=true compile"
+testCmd: true
+cbmcArguments:
+  # Constrain the size of arrays created in the analyzed code.
+  java-max-vla-length: 100000
+  # Set a limit on the number of instructions that can be generated as part of a test trace.
+  depth: false
+  # Strategy for test object generation
+  java-test-input-factory: false
+  # Allow up to N mutator calls after a test input constructor (default 0)
+  java-test-input-factory-bmc-max-mutators: false
+  # Limit input factory recursive depth
+  java-test-input-factory-bmc-recursion-limit: false
+  # Do not generate coverage comments on generated tests.
+  java-generate-no-comments: true
+  # For an accessible function under test that returns a primitive, boxed primitive,
+  # string or null value, prints its call inlined into the assertion on the return value
+  inline-into-assertion: true
+  # For function arguments that are primitive, boxed primitive, string or null value, prints
+  # them inlined into the call to the function under test.
+  inline-function-arguments: true
+  # Do not generate tests for methods with the specified access modifier
+  do-not-test-methods-with-access: [private]
+  # alias for --cover-only function
+  cover-function-only: false
+  # Only add coverage goals to (i.e. "instrument") functions satisfying criterion C
+  cover-only: file
+phases:
+  # Phase 0
+  - timeout: 150
+    cbmcArguments:
+      # Use simple models first containers (ArrayList, HashMap, HashSet,...) will have a maximum size of one.
+      classpath: '/tools/cbmc/models-simple-overlay.jar:/tools/cbmc/models.jar:.'
+      # Instantiate classes using the simplest constructor strategy
+      smart-harness: simplest-constructor-and-nondet
+      # Never initialize reference-typed parameter to the entry point with null.
+      java-assume-inputs-non-null: true
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 10
+      # Bound the length of input strings.
+      max-nondet-string-length: 10
+      # Add constraint that char and strings are printable
+      string-printable: true
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: false
+      # Set an upper bound on loop unwinding.
+      unwind: 1
+      # Set string input value
+      string-input-value: ["foo", "a/b/c", "a'b'c", ",", "/", "'"]
+      # Only initialize numerical primitive-typed parameter to an entry point within the given range
+      java-assume-inputs-interval: "[2:999999]"
+      # Force float and double inputs to have integer values.
+      java-assume-inputs-integral: true
+  # Phase 1
+  - timeout: 150
+    cbmcArguments:
+      # Use simple models first containers (ArrayList, HashMap, HashSet,...) will have a maximum size of one.
+      classpath: '/tools/cbmc/models-simple-overlay.jar:/tools/cbmc/models.jar:.'
+      # Never initialize reference-typed parameter to the entry point with null.
+      java-assume-inputs-non-null: true
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 10
+      # Bound the length of input strings.
+      max-nondet-string-length: 10
+      # Add constraint that char and strings are printable
+      string-printable: true
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: false
+      # Set an upper bound on loop unwinding.
+      unwind: 1
+      # Set string input value
+      string-input-value: "foo"
+      # Only initialize numerical primitive-typed parameter to an entry point within the given range
+      java-assume-inputs-interval: "[-999999:-2]"
+      # Force float and double inputs to have integer values.
+      java-assume-inputs-integral: true
+  # Phase 2
+  - timeout: 150
+    cbmcArguments:
+      # Use standard diffblue models library
+      classpath: '/tools/cbmc/models.jar:.'
+      # Never initialize reference-typed parameter to the entry point with null.
+      java-assume-inputs-non-null: false
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 30
+      # Bound the length of input strings.
+      max-nondet-string-length: 100
+      # Add constraint that char and strings are printable
+      string-printable: false
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: false
+      # Set an upper bound on loop unwinding.
+      unwind: 3
+  # Phase 3
+  - timeout: 150
+    cbmcArguments:
+      # Use simple models first containers (ArrayList, HashMap, HashSet,...) will have a maximum size of one.
+      classpath: '/tools/cbmc/models-simple-overlay.jar:/tools/cbmc/models.jar:.'
+      # Instantiate classes using the simplest constructor strategy
+      smart-harness: simplest-constructor-and-nondet
+      # Never initialize reference-typed parameter to the entry point with null.
+      java-assume-inputs-non-null: true
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 10
+      # Bound the length of input strings.
+      max-nondet-string-length: 10
+      # Add constraint that char and strings are printable
+      string-printable: true
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: false
+      # Set an upper bound on loop unwinding.
+      unwind: 1
+  # Phase 4
+  - timeout: 150
+    cbmcArguments:
+      # Use simple models first containers (ArrayList, HashMap, HashSet,...) will have a maximum size of one
+      classpath: '/tools/cbmc/models-simple-overlay.jar:/tools/cbmc/models.jar:.'
+      # Never initialize reference-typed parameter to the entry point with null.
+      java-assume-inputs-non-null: true
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 10
+      # Bound the length of input strings.
+      max-nondet-string-length: 10
+      # Add constraint that char and strings are printable
+      string-printable: true
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: false
+      # Set an upper bound on loop unwinding.
+      unwind: 1
+  # Phase 5
+  - timeout: 150
+    cbmcArguments:
+      # Use simple models first containers (ArrayList, HashMap, HashSet,...) will have a maximum size of one
+      classpath: '/tools/cbmc/models-simple-overlay.jar:/tools/cbmc/models.jar:.'
+      # initialize reference-typed parameter to the entry point with null.
+      java-assume-inputs-non-null: false
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 20
+      # Bound the length of input strings.
+      max-nondet-string-length: 50
+      # Add constraint that char and strings are printable
+      string-printable: true
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: false
+      # Set an upper bound on loop unwinding.
+      unwind: 2
+  # Phase 6
+  - timeout: 100
+    cbmcArguments:
+      # Use standard diffblue models library
+      classpath: '/tools/cbmc/models.jar:.'
+      # Never initialize reference-typed parameter to the entry point with null.
+      java-assume-inputs-non-null: false
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 30
+      # Bound the length of input strings.
+      max-nondet-string-length: 100
+      # Explores the program tree breadth-first.
+      paths: fifo
+      # No constraint that char and strings are printable
+      string-printable: false
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: false
+      # Set an upper bound on loop unwinding.
+      unwind: false
+  # Phase 7
+  - timeout: 150
+    cbmcArguments:
+      # Use standard diffblue models library
+      classpath: '/tools/cbmc/models.jar:.'
+      # Never initialize reference-typed parameter to the entry point with null.
+      java-assume-inputs-non-null: false
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 30
+      # Bound the length of input strings.
+      max-nondet-string-length: 100
+      # No constraint that char and strings are printable
+      string-printable: false
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: true
+      # Set an upper bound on loop unwinding
+      unwind: 3
+units:
+ - target:
+   - dir: components/open-cloud-common-core/target/classes
+     file: com/opencloud/common/utils/StringUtils.class
+     sourceDir: components/open-cloud-common-core/src/main/java
+     sourceFile: com/opencloud/common/utils/StringUtils.java
+   - dir: components/open-cloud-common-core/target/classes
+     file: com/opencloud/common/utils/EncodeUtils.class
+     sourceDir: components/open-cloud-common-core/src/main/java
+     sourceFile: com/opencloud/common/utils/EncodeUtils.java
+ - target:
+   - dir: components/open-cloud-common-core/target/classes
+     file: com/opencloud/common/utils/RandomValueUtils.class
+     sourceDir: components/open-cloud-common-core/src/main/java
+     sourceFile: com/opencloud/common/utils/RandomValueUtils.java
+ - target:
+   - dir: components/open-cloud-common-core/target/classes
+     file: com/opencloud/common/utils/CurrencyUtils.class
+     sourceDir: components/open-cloud-common-core/src/main/java
+     sourceFile: com/opencloud/common/utils/CurrencyUtils.java
+ - target:
+   - dir: components/open-cloud-common-core/target/classes
+     file: com/opencloud/common/utils/DateUtils.class
+     sourceDir: components/open-cloud-common-core/src/main/java
+     sourceFile: com/opencloud/common/utils/DateUtils.java
+ - target:
+   - dir: components/open-cloud-common-core/target/classes
+     file: com/opencloud/common/utils/EncodeUtils.class
+     sourceDir: components/open-cloud-common-core/src/main/java
+     sourceFile: com/opencloud/common/utils/EncodeUtils.java
